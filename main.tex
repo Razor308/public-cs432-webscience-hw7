@@ -1,0 +1,462 @@
+\documentclass[12pt]{article}
+\usepackage{times} 			% use Times New Roman font
+
+\usepackage[margin=1in]{geometry}   % sets 1 inch margins on all sides
+\usepackage{hyperref}               % for URL formatting
+\usepackage[pdftex]{graphicx}       % So includegraphics will work
+\setlength{\parskip}{1em}           % skip 1em between paragraphs
+\usepackage{indentfirst}            % indent the first line of each paragraph
+\usepackage{datetime}
+\usepackage[small, bf]{caption}
+\usepackage{listings}               % for code listings
+\usepackage{xcolor}                 % for styling code
+\usepackage{multirow}
+
+%New colors defined below
+\definecolor{backcolour}{RGB}{246, 246, 246}   % 0xF6, 0xF6, 0xF6
+\definecolor{codegreen}{RGB}{16, 124, 2}       % 0x10, 0x7C, 0x02
+\definecolor{codepurple}{RGB}{170, 0, 217}     % 0xAA, 0x00, 0xD9
+\definecolor{codered}{RGB}{154, 0, 18}         % 0x9A, 0x00, 0x12
+
+%Code listing style named "gcolabstyle" - matches Google Colab
+\lstdefinestyle{gcolabstyle}{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{backcolour},   
+  commentstyle=\itshape\color{codegreen},
+  keywordstyle=\color{codepurple},
+  stringstyle=\color{codered},
+  numberstyle=\ttfamily\footnotesize\color{darkgray}, 
+  breakatwhitespace=false,         
+  breaklines=true,                 
+  captionpos=b,                    
+  keepspaces=true,                 
+  numbers=left,                    
+  numbersep=5pt,                  
+  showspaces=false,                
+  showstringspaces=false,
+  showtabs=false,                  
+  tabsize=2
+}
+
+\lstset{style=gcolabstyle}      %set gcolabstyle code listing
+
+% to make long URIs break nicely
+\makeatletter
+\g@addto@macro{\UrlBreaks}{\UrlOrds}
+\makeatother
+
+% for fancy page headings
+\usepackage{fancyhdr}
+\setlength{\headheight}{13.6pt} % to remove fancyhdr warning
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\small \thepage}
+\lhead{\small HW7, Bartels}  % EDIT THIS, REPLACE # with HW number
+\chead{\small CS 432, Fall 2020} 
+
+%-------------------------------------------------------------------------
+\begin{document}
+
+\begin{centering}
+{\large\textbf{HW7 - Recommendation Systems}}\\ % EDIT THIS
+                                % REPLACE # with HW num and ADD title
+Logan Bartels\\                     % EDIT THIS
+November 30, 2020\\                      % EDIT THIS
+\end{centering}
+
+%-------------------------------------------------------------------------
+
+% The * after \section just says to not number the sections
+\section*{Note}
+This assignment was completed entirely in a Google Colab notebook.  The notebook is a copy of the notebook from week-11.  Any additions I made to the notebook (with the exception of test code for the original notebook) are under section ``HW7;'' however, the entirety of the notebook was used to complete the assignment.  Because modifications to existing code were as minimal as commenting out a line of code, I opted to leave the functions where they are in the notebook.  Here is the link to the notebook:  \url{https://colab.research.google.com/drive/1Y-fqLOcpgsYkHiqWCwNbPq_1YxYq3f7l?usp=sharing} 
+\section*{Q1}
+
+
+
+\subsection*{Answer}
+
+\begin{lstlisting}[language=Python, caption=Function to load data from u.item and u.data files., label=lst:load]
+def loadMovieLens():
+  # Get movie titles
+    movies = {}
+    for line in open('u.item', encoding="ISO-8859-1"):
+        (id, title) = line.split('|')[0:2]
+        movies[id] = title
+  # Load data
+    prefs = {}
+    for line in open('u.data'):
+        (user, movieid, rating, ts) = line.split('\t')
+        prefs.setdefault(user, {})
+        prefs[user][movies[movieid]] = float(rating)
+    return prefs
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python, caption=Python code used to determine users similar to me., label=lst:similar]
+prefs = loadMovieLens()
+for line in open("u.user"):
+  user = line.split('|')[0:4]
+  if user[1] == '23' and user[2] == 'M' and user[3] == 'student':
+    print(user)
+  else:
+    continue
+\end{lstlisting}
+
+\begin{lstlisting}[caption=Output of users similar to me based on age gender and occupation, label=lst:users]
+['33', '23', 'M', 'student']
+['37', '23', 'M', 'student']
+['66', '23', 'M', 'student']
+['135', '23', 'M', 'student']
+['391', '23', 'M', 'student']
+['408', '23', 'M', 'student']
+['706', '23', 'M', 'student']
+['838', '23', 'M', 'student']
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python, caption=Python code for printing out a sorted list of a user's rated movies along with their ratings, label=lst:ratings]
+sorted_movies = sorted(prefs['37'].items(), key=lambda x: x[1], reverse=True)
+
+for movie in sorted_movies:
+  print(movie[0], movie[1])
+\end{lstlisting}
+
+\textbf{Note:} The movies in the following list are listed in descending order according to the output produced by listing \ref{lst:ratings}.  The output produced by listing \ref{lst:ratings} is omitted from this report for brevity.
+
+Final 3 users with their top and bottom 3 movies:
+\begin{enumerate}
+    \item User 37, \textbf{My substitute user} (substitute you).
+    \begin{enumerate}
+        \item Top 3 Movies:
+        \begin{enumerate}
+            \item Batman (1989)
+            \item Pulp Fiction (1994)
+            \item Top Gun (1986)
+        \end{enumerate}
+        \item Bottom 3 Movies:
+        \begin{enumerate}
+            \item Dragonheart (1996)
+            \item Independence Day (ID4) (1996)
+            \item Jurassic Park (1993)
+        \end{enumerate}
+    \end{enumerate}
+    \item User 66
+    \begin{enumerate}
+        \item Top 3 Movies:
+        \begin{enumerate}
+            \item Return of the Jedi (1983)
+            \item Courage Under Fire (1996)
+            \item Ransom (1996)
+        \end{enumerate}
+        \item Bottom 3 Movies:
+        \begin{enumerate}
+            \item Excess Baggage (1997)
+            \item Muppet Treasure Island (1996)
+            \item English Patient, The (1996)
+        \end{enumerate}
+    \end{enumerate}
+    \item User 838
+    \begin{enumerate}
+        \item Top 3 Movies:
+        \begin{enumerate}
+            \item Princess Bride, The (1987)
+            \item Hunchback of Notre Dame, The (1996)
+            \item Return of the Jedi (1983)
+        \end{enumerate}
+        \item Bottom 3 Movies:
+        \begin{enumerate}
+            \item Air Force One (1997)
+            \item Mars Attacks! (1996)
+            \item Independence Day (ID4) (1996)
+        \end{enumerate}
+    \end{enumerate}
+\end{enumerate}
+
+
+
+
+\subsection*{Discussion}
+
+The function shown in listing \ref{lst:load} is taken directly from the PCI recommendations.py file with modifications made to run in a Google Colab notebook.  The function loads in the first two indexes of every item in ``u.item,'' the movie id and its title.  It then places them into a dictionary with the id as the key and the title as the value.  Then it reads in user ratings from the ``u.data'' file, storing the user, movie, and rating in a nested dictionary called ``prefs.''  ``Prefs'' is then returned at the end of the function.  One significant modification made is on line 4, and that is the addition of the ``encoding=ISO-8859-1'' parameter to the ``open'' function.  Without the ``encoding=ISO-8859-1'' parameter, I was getting a UnicodeDecodeError.  
+
+In order to find users similar to me according to age, gender, and occupation, I wrote the code in listing \ref{lst:similar}.  It starts by calling the ``loadMovieLens'' function, and storing the returned prefs in a variable called ``prefs'' for later use.  Then it opens the ``u.user'' file and reads the first three indexes of each line.  I did this because the first three fields, age, gender, and occupation are what I needed.  Then a check is performed to see if the user's age, gender, and occupation match my parameters.  In this case, I was looking for 23 year-old male students.  Listing \ref{lst:users} shows the output of listing \ref{lst:similar}.  Since I got eight results of users similar to me, I needed to narrow them down to my choice of three.
+
+The code in listing \ref{lst:ratings} is part of my process of narrowing my selection of three similar users.  The code starts by sorting the dictionary of a single user's movies and their ratings by the ratings in descending order.  The resulting list of tuples is stored in the ``sorted\_movies'' variable.  A for-loop is used to loop through the list and print the movies with their ratings.  The result is a list of moves sorted in descending order by their ratings.  As you can see on the first line, user's ratings that will be sorted and printed are user 37's.  I changed the ``37'' to another similar user's id number after each iteration according to the ids listed in listing \ref{lst:users}; I started with user 33, then 37, etc.
+
+After examining each user's ratings for movies my final three choices of similar users are listed in the list above this subsection.  Their top and bottom three movies are also listed with their ids.  My selection for the user that will act as my substitute is user 37.  I did not pick him because of his top three movies.  I picked him because the gave other movies like Star Wars (1977), The Terminator (1984), and The Crow (1994) a 5.0 rating.  One outlier I must note for user 37 is they gave Independence Day (1996) a 2.0 rating.  I liked that movie much more that he did.  I would probably give it a 4.0 rating.
+
+\section*{Q2}
+
+\subsection*{Answer}
+
+\begin{lstlisting}[language=Python, caption=topMatches function copy-pasted from the week-11 Colab notebook with the function call at the bottom., label=lst:matches]
+def topMatches(
+    prefs,
+    person,
+    n=5,
+    similarity=sim_pearson,
+):
+    '''
+    Returns the best matches for person from the prefs dictionary. 
+    Number of results and similarity function are optional params.
+    '''
+
+    scores = [(similarity(prefs, person, other), other) for other in prefs
+              if other != person]
+    scores.sort()
+    scores.reverse()
+    return scores[0:n]
+    
+topMatches(prefs, "37", n=5)
+\end{lstlisting}
+
+\begin{lstlisting}[caption=Output of top 5 users after call to topMatches function using the prefs dictionary and user 37., label=lst:top5]
+[(1.0000000000000027, '93'),
+ (1.0, '937'),
+ (1.0, '859'),
+ (1.0, '791'),
+ (1.0, '754')]
+\end{lstlisting}
+
+\begin{lstlisting}[caption=Output of bottom 5 users after call to topMatches function using the prefs dictionary and user 37., label=lst:bottom5]
+[(-1.000000000000004, '491'),
+ (-1.0, '185'),
+ (-1.0, '228'),
+ (-1.0, '469'),
+ (-1.0, '578')]
+\end{lstlisting}
+
+\subsection*{Discussion}
+The top five most correlated users (shown in listing \ref{lst:top5}) to my substitute user, user 37, were determined using the ``topMatches'' function shown in listing \ref{lst:matches}.  The function call was made in a lone cell in the Colab notebook, but was placed at the bottom of listing \ref{lst:matches} for brevity.  The function call passes in the ``prefs'' dictionary that was defined on line 1 in listing \ref{lst:similar}, the id of my substitute user (37) and ``n=5'' (for the five most correlated users).
+
+In order to determine the five least correlated users, I simply commented out line 15 of listing \ref{lst:matches}, which sorts the returned list in descending order, and ran the function call again.  This lead to the output shown in listing \ref{lst:bottom5}.
+
+\section*{Q3}
+
+\subsection*{Answer}
+
+\begin{lstlisting}[language=Python, caption=getRecommendations function copy-pasted from the week-11 Colab notebook., label=lst:getreco]
+def getRecommendations(prefs, person, similarity=sim_pearson):
+    '''
+    Gets recommendations for a person by using a weighted average
+    of every other user's rankings
+    '''
+
+    totals = {}
+    simSums = {}
+    for other in prefs:
+    # Don't compare me to myself
+        if other == person:
+            continue
+        sim = similarity(prefs, person, other)
+        # Ignore scores of zero or lower
+        if sim <= 0:
+            continue
+        for item in prefs[other]:
+            # Only score movies I haven't seen yet
+            if item not in prefs[person] or prefs[person][item] == 0:
+                # Similarity * Score
+                totals.setdefault(item, 0)
+                # The final score is calculated by multiplying each item by the
+                #   similarity and adding these products together
+                totals[item] += prefs[other][item] * sim
+                # Sum of similarities
+                simSums.setdefault(item, 0)
+                simSums[item] += sim
+    # Create the normalized list
+    rankings = [(total / simSums[item], item) for (item, total) in
+                totals.items()]
+    # Return the sorted list
+    rankings.sort()
+    rankings.reverse()
+    return rankings
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python, caption=Python code to compute and print ratings for films that my substitute user has not seen., label=lst:recommendations]
+rankings = getRecommendations(prefs, "37")
+for movies in rankings:
+  print(movies)
+\end{lstlisting}
+Top and bottom five movie recommendations for user 37, my substitute user:
+\begin{enumerate}
+    \item Top 5 recommendations:
+    \begin{enumerate}
+        \item They Made Me a Criminal (1939)
+        \item Someone Else's America (1995)
+        \item Santa With Muscles (1996)
+        \item Prefontaine (1997)
+        \item Marlene Dietrich: Shadow and Light (1996)
+    \end{enumerate}
+    \item Bottom 5 recommendations:
+    \begin{enumerate}
+        \item Amityville Curse, The (1990)
+        \item Amityville 3-D (1983)
+        \item Amityville 1992: It's About Time (1992)
+        \item American Strays (1996)
+        \item 3 Ninjas: High Noon at Mega Mountain (1998)
+    \end{enumerate}
+\end{enumerate}
+
+\subsection*{Discussion}
+Something I must note is the output of listing \ref{lst:recommendations} is omitted from this report for brevity.  Determining the top and bottom five movies my user should see was simple.  I used the ``getRecommendations'' function shown in listing \ref{lst:getreco}.  That function computes ratings for movies the specified user has not seen, then puts them into a list.  It then sorts that list in descending order, with the movies at the top of the list (the ones with less than or equal to a 5.0 rating) being the ones the user would like the most.  The ones at the bottom of the list (the ones with less than or equal to a 1.0 rating) being the ones the user would like the least.
+
+I then made a call to the ``getRecommendations'' function in listing \ref{lst:recommendations}, passing in the ``prefs'' dictionary and user 37.  I stored the returned list into a variable called ``rankings.''  Then the entire list is printed out.  I simply took the five movies at the top and bottom of the list and put them in the list above this subsection.
+
+\section*{Q4}
+
+\subsection*{Answer}
+
+\begin{lstlisting}[language=Python, caption=transformPrefs function copy-pasted from the week-11 Colab notebook along with cells of code used to determine similar movies to my favorite and least favorite movies., label=lst:transform]
+def transformPrefs(prefs):
+    '''
+    Transform the recommendations into a mapping where persons are described
+    with interest scores for a given title e.g. {title: person} instead of
+    {person: title}.
+    '''
+
+    result = {}
+    for person in prefs:
+        for item in prefs[person]:
+            result.setdefault(item, {})
+            # Flip item and person
+            result[item][person] = prefs[person][item]
+    return result
+    
+similarMovies = transformPrefs(prefs)
+
+for x, y in similarMovies.items():
+  print(x ,y)
+  
+topMatches(similarMovies, "Ace Ventura: Pet Detective (1994)")
+\end{lstlisting}
+
+\begin{lstlisting}[caption=Output of calling the topMatches function to get the 5 most correlated movies to Ace Ventura: Pet Detective., label=lst:likeAce ]
+[(1.0, 'Wonderful, Horrible Life of Leni Riefenstahl, The (1993)'),
+ (1.0, 'When the Cats Away (Chacun cherche son chat) (1996)'),
+ (1.0, 'Welcome To Sarajevo (1997)'),
+ (1.0, 'U.S. Marshalls (1998)'),
+ (1.0, 'Shiloh (1997)')]
+\end{lstlisting}
+
+\begin{lstlisting}[caption=Output of calling the topMatches function to get the 5 least correlated movies to Ace Ventura: Pet Detective., label=lst:notlikeAce]
+[(-1.0000000000000007, 'Rent-a-Kid (1995)'),
+ (-1.0000000000000007, 'True Crime (1995)'),
+ (-1.0, '1-900 (1994)'),
+ (-1.0, 'Across the Sea of Time (1995)'),
+ (-1.0, 'Angel and the Badman (1947)')]
+\end{lstlisting}
+
+\begin{lstlisting}[caption=Output of calling the topMatches function to get the 5 most correlated movies to Jurassic Park., label=lst:likeJurassic]
+[(1.0000000000000004, 'Loch Ness (1995)'),
+ (1.0, 'Wedding Gift, The (1994)'),
+ (1.0, 'Vermin (1998)'),
+ (1.0, 'Two Much (1996)'),
+ (1.0, 'Traveller (1997)')]
+\end{lstlisting}
+
+\begin{lstlisting}[caption=Output of calling the topMatches function to get the 5 least correlated moves to Jurassic Park., label=lst:notlikeJurassic]
+[(-1.0000000000000018, 'Kaspar Hauser (1993)'),
+ (-1.0, '1-900 (1994)'),
+ (-1.0, 'American Dream (1990)'),
+ (-1.0, 'Anna (1996)'),
+ (-1.0, 'Aparajito (1956)')]
+\end{lstlisting}
+
+\subsection*{Discussion}
+
+This question was completed using the ``transformPrefs'' function shown in listing \ref{lst:transform} from the week-11 notebook.  The function switches the users with their items (movies) in the prefs dictionary passed in.  Something to note is lines 16, 18-19, and 21 all have their own cells in the notebook, but were included in listing \ref{lst:transform} for brevity.  I made a call to ``transformPrefs'' on line 16, and stored the result in the ``similarMovies'' variable.  Then I printed out the ``similarMovies'' list to make sure it held the correct data.  Then I made a call to the ``topMatches'' function, passing in the ``similarMovies'' list, Ace Ventura: Pet Detective, and Jurassic Park (not shown).
+
+I should note that Ace Ventura: Pet Detective and Jurassic Park represent my favorite movie and my least favorite movie in the data set, respectively.  To get the top five similar movies to Ace Ventura: Pet Detective (shown in listing \ref{lst:likeAce}), I made a call to the unmodified ``topMatches'' function shown in listing \ref{lst:matches}.  To get the five least similar movies to Ace Ventura: Pet Detective (shown in listing \ref{lst:notlikeAce}), I commented out line 15 of listing \ref{lst:matches} to sort the list in ascending order, and called ``topMatches'' again.  To get similar and non-similar movies to Jurassic Park, I modified the call to ``topMatches'' replacing Ace Ventura: Pet Detective with Jurassic Park.  I also commented out/uncommented out line 15 of listing \ref{lst:matches} as needed to produce the output of listings \ref{lst:likeJurassic} and \ref{lst:notlikeJurassic}.  Those are the five most similar and least similar movies to Jurassic Park, respectively.
+
+\textbf{Note:} the only film in the outputs of correlated movies to Ace Ventura: Pet Detective and Jurassic Park is Shiloh.  I had to watch trailers for the rest of them.
+
+Based on my knowledge of the resulting films, I only like two out of the five most correlated films to Ace Ventura: Pet Detective.  So I would not call the results accurate for that part.  I would call the results accurate for the five least correlated films.  I have no interest in any of them.
+
+Moving on to Jurassic Park,  I'm not sure how to gauge the accuracy of the five most correlated films, considering I don't like the movie.  I have no interest in any of the films in the five most correlated movies.  Though I could see some people who like Jurassic Park liking Loch Ness.  As far as the least correlated movies to Jurassic Park, I think those results are accurate.  Even if I liked Jurassic Park, I have no interest in any of five least correlated movies.
+
+\subsection*{Trailer Search Queries and Links}
+\begin{enumerate}
+    \item The trailer for The Wonderful, Horrible Life of Leni Riefenstahl was found by searching ``the Wonderful, Horrible Life of Leni Riefenstahl trailer'' on YouTube.
+    \begin{itemize}
+        \item Link: \url{https://youtu.be/91607Aqn-mo}
+    \end{itemize}
+    \item The trailer for When the Cats Away (CHacun cherche son chat) was found by searching ``When the Cats Away (Chacun cherche son chat) trailer'' on YouTube.
+    \begin{itemize}
+        \item Link: \url{https://youtu.be/8oSunSnkuhU}
+    \end{itemize}
+    \item The trailer for Welcome to Sarajevo was found by searching ``Welcome To Sarajevo trailer'' on YouTube.
+    \begin{itemize}
+        \item Link: \url{https://youtu.be/IOmm1OD2ArQ}
+    \end{itemize}
+    \item The trailer for U.S. Marshalls was found by searching ``U.S. Marshalls trailer'' on YouTube
+    \begin{itemize}
+        \item Link: \url{https://youtu.be/_shXM-868Q8}
+    \end{itemize}
+    \item The trailer for Rent-a-Kid was found by searching ``rent a kid trailer'' on YouTube.
+    \begin{itemize}
+        \item Link: \url{https://youtu.be/00-WPchnLTE}
+    \end{itemize}
+    \item The trailer for True Crime was found by searching ``true crime trailer 1995'' on YouTube.
+    \begin{itemize}
+        \item Link: \url{https://youtu.be/5zX2WAnifeA}
+    \end{itemize}
+    \item The trailer for 1-900 was found by searching ``1-900 1994 trailer'' on YouTube.
+    \begin{itemize}
+        \item Link: \url{https://youtu.be/oK4etva_lUU}
+    \end{itemize}
+    \item The trailer for Across the Sea of Time was found by searching ``across the sea of time 1995 trailer'' on YouTube.
+    \begin{itemize}
+        \item Link: \url{https://youtu.be/CYWtLEJg_OY}
+    \end{itemize}
+    \item The trailer for Angel and the Badman was found by searching ``angel and the badman trailer'' on YouTube.
+    \begin{itemize}
+        \item Link: \url{https://youtu.be/kw9Hi8le_Cg}
+    \end{itemize}
+    \item The trailer for Loch Ness was found by searching ``loch ness 1995 trailer'' on YouTube.
+    \begin{itemize}
+        \item Link: \url{https://youtu.be/L90001PVzec}
+    \end{itemize}
+    \item The trailer for The Wedding Gift was found by searching ''the wedding gift 1994 movie'' on Bing, and clikcing on a Best Buy ad for the DVD.  The trailer is accessed by a play button on the product page.
+    \begin{itemize}
+        \item Link: \url{https://www.bestbuy.com/site/the-wedding-gift-dvd-1994/19271781.p?skuId=19271781&ref=212&loc=1&ref=212&loc=1&ref=06&loc=01&msclkid=9a6f99b3a43e128c0099c67043ae8418&ds_rl=1273104&gclid=CODOgaWwqO0CFUiVswodSKsFZg&gclsrc=ds}
+    \end{itemize}
+    \item I could not locate a trailer for Vermin.  The closest thing I could find was a one-sentence plot description on IMDB after searching ``vermin 1998 movie'' on Bing.
+    \begin{itemize}
+        \item Link: \url{https://www.imdb.com/title/tt0120881/}
+    \end{itemize}
+    \item The trailer for Two Much was found by searching ``two much 1996 trailer'' on YouTube.
+    \begin{itemize}
+        \item Link: \url{https://youtu.be/ajGpyRSKgKw}
+    \end{itemize}
+    \item The trailer for Traveller was found by searching ``traveller 1997 trailer'' on YouTube.
+    \begin{itemize}
+        \item Link: \url{https://youtu.be/9dOZyrzR7R0}
+    \end{itemize}
+    \item I could not locate a trailer for Kaspar Hauser, but I found a synopsis on IMDB by searching ``kaspar hauser 1993'' on Bing.
+    \begin{itemize}
+        \item Link: \url{https://www.imdb.com/title/tt0110246/}
+    \end{itemize}
+    \item I could not find a trailer for American Dream, but I found a synopsis on IMDB by searching ``american dream 1990 movie'' on Bing.
+    \begin{itemize}
+        \item Link: \url{https://www.imdb.com/title/tt0099028/}
+    \end{itemize}
+    \item I could not find a trailer for Anna, but I found a synopsis on IMDB by searching ``anna 1996 movie'' on Bing.
+    \begin{itemize}
+        \item Link: \url{https://www.imdb.com/title/tt2661954/}
+    \end{itemize}
+    \item The trailer for Aparajito was found by searching ``aparajito 1956'' on Bing.
+    \begin{itemize}
+        \item Link: \url{https://www.imdb.com/title/tt0048956/}
+    \end{itemize}
+\end{enumerate}
+
+\section*{References}
+
+
+\begin{itemize}
+    \item {How to Sort a Dictionary by Value in Python, \url{https://careerkarma.com/blog/python-sort-a-dictionary-by-value/}}
+    \item {“for line in…” results in UnicodeDecodeError: 'utf-8' codec can't decode byte, \url{https://stackoverflow.com/questions/19699367/for-line-in-results-in-unicodedecodeerror-utf-8-codec-cant-decode-byte}}
+    \item {Programming-Collective-Intelligence chapter 2 github, \url{https://github.com/arthur-e/Programming-Collective-Intelligence/blob/master/chapter2/recommendations.py}}
+    \item {Week-11 Colab notebook, \url{https://colab.research.google.com/github/cs432-websci-fall20/assignments/blob/master/432_PCI_Ch02.ipynb}}
+\end{itemize}
+
+\end{document}
+
