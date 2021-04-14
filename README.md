@@ -1,3 +1,6 @@
+# Below is an assignment for ODU's CS432 Web Science Course.
+# The completed report written in LaTeX can be veiwed [here](HW7_report.pdf)
+
 # Homework 7 - Recommendation Systems
 **Due:** *Monday*, November 30, 2020 before 11:59pm
 
